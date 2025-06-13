@@ -6,9 +6,6 @@ import {
   ChevronDown, ChevronUp, GraduationCap, Users, MessageSquare, LogOut,
 } from 'lucide-react';
 
-import { auth, db } from '../Firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ user, onLogout }) => {
@@ -22,15 +19,14 @@ const Navbar = ({ user, onLogout }) => {
   const toggleDropdown = () => setDropdownOpen((p) => !p);
   const closeMobile = () => setMobileOpen(false);
 
-  /* ----------  dynamic profile path  ---------- */
   const profilePath =
     user?.role?.toLowerCase() === 'mentor' ? '/mentor-profile' : '/student-profile';
 
-  /* ----------  confirm / cancel logout  ------- */
   const handleLogoutClick = () => {
     setShowLogoutModal(true);
     setDropdownOpen(false);
   };
+
   const confirmLogout = async () => {
     setShowLogoutModal(false);
     try {
@@ -40,9 +36,9 @@ const Navbar = ({ user, onLogout }) => {
       toast.error('Failed to log out. Please try again.');
     }
   };
+
   const cancelLogout = () => setShowLogoutModal(false);
 
-  /* ----------  click-outside dropdown  -------- */
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -53,27 +49,30 @@ const Navbar = ({ user, onLogout }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  /* ----------  nav links by role  -------------- */
+  // Common always-visible pages
   const common = [
     { name: 'Home', icon: <Home size={18} />, path: '/' },
     { name: 'Courses', icon: <BookOpen size={18} />, path: '/courses' },
     { name: 'About', icon: <Info size={18} />, path: '/about' },
     { name: 'Contact', icon: <Phone size={18} />, path: '/contact' },
   ];
+
   const studentExtra = [
     { name: 'Notes', icon: <FileText size={18} />, path: '/studybuddy-notes' },
     { name: 'Messages', icon: <MessageSquare size={18} />, path: '/messages' },
   ];
+
   const mentorExtra = [
     { name: 'Students', icon: <Users size={18} />, path: '/students' },
     { name: 'Materials', icon: <GraduationCap size={18} />, path: '/materials' },
   ];
-  const navLinks =
-    user?.role?.toLowerCase() === 'mentor'
-      ? [...common, ...mentorExtra]
-      : [...common, ...studentExtra];
 
-  // UI PART
+  const navLinks = user
+    ? user?.role?.toLowerCase() === 'mentor'
+      ? [...common, ...mentorExtra]
+      : [...common, ...studentExtra]
+    : common;
+
   return (
     <nav className="backdrop-blur-md bg-white/80 shadow-lg sticky top-0 z-50 border-b border-orange-100">
       {/* --- Logout Modal --- */}
@@ -150,7 +149,6 @@ const Navbar = ({ user, onLogout }) => {
 
               {dropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-                  {/* ↓↓↓ dynamic profile link ↓↓↓ */}
                   <a
                     href={profilePath}
                     onClick={() => setDropdownOpen(false)}
@@ -235,7 +233,6 @@ const Navbar = ({ user, onLogout }) => {
 
                   {dropdownOpen && (
                     <div className="mt-2 bg-white rounded-md shadow-lg border border-gray-200">
-                      
                       <a
                         href={profilePath}
                         onClick={() => {
